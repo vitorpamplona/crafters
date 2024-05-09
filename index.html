@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Crafters: Resume Builder</title>
+        <link rel="stylesheet" href="style.css">
+        <link href="https://fonts.googleapis.com/css?family=Merriweather:300,400,700|Source+Sans+Pro:400,400i" rel="stylesheet">
+
+        <script src="js/jquery-3.6.2.min.js"></script>
+        <script src="js/date.js"></script>
+        
+        <script src="js/schools.js"></script>
+        <script src="js/works.js"></script>
+        <script src="js/awards.js"></script>
+        <script src="js/patents.js"></script>
+        <script src="js/publications.js"></script>
+        <script src="js/volunteers.js"></script>
+        
+        <script src="https://unpkg.com/nostr-tools/lib/nostr.bundle.js"></script>
+        <script src="https://www.unpkg.com/nostr-login@latest/dist/unpkg.js" data-perms="sign_event:11000"></script> 
+
+        <script src="js/ui-utils.js"></script>
+        <script src="js/nostr.js"></script>
+    <body>
+        <div class="page">
+            <div class="section row">
+                <h1 class="col" id="name"></h1>
+                <div class="contact-info col-right">
+                    <div id="email"></div>
+                    <div id="website"></div>
+                    <div id="location"></div>
+                </div>
+            </div>
+            <div class="section row">
+                <h2 class="col">Summary</h2>
+                <div class="section-text col-right">
+                    <div id="summary" class="extra-top-margin"></div>
+                </div>
+            </div>
+            <div class="section row" id="interests-hover-base">
+                <h2 class="col">Interests</h2>
+                <div class="section-text col-right row" id="interests-add-host">
+                    <div class="extra-top-margin">
+                        <ul class="skills broken-list-2" id="interests">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="section row" id="skills-hover-base">
+                <h2 class="col">Skills</h2>
+                <div class="section-text col-right row" id="skills-add-host">
+                    <div class="extra-top-margin">
+                        <ul class="skills broken-list-3" id="skills">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="section row" id="education-hover-base">
+                <h2 class="col">Education</h2>
+                <div class="section-text-width col-right row" id="education-add-host" >
+                    <div class="extra-top-margin" id="schools">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="section row" id="work-hover-base">
+                <h2 class="col">Experience</h2>
+                <div class="section-text-width col-right row" id="work-add-host" >
+                    <div class="extra-top-margin" id="works">
+                    
+                    </div>
+                </div>
+            </div>
+
+            <div class="section row" id="publications-hover-base">
+                <h2 class="col">Publications</h2>
+                <div class="section-text-width col-right row" id="publications-add-host" >
+                    <div class="extra-top-margin" id="publications">
+                    
+                    </div>
+                </div>
+            </div>
+
+            <div class="section row" id="patents-hover-base">
+                <h2 class="col">Patents</h2>
+                <div class="section-text-width col-right row" id="patents-add-host" >
+                    <div class="extra-top-margin" id="patents">
+                    
+                    </div>
+                </div>
+            </div>
+
+            <div class="section row" id="awards-hover-base">
+                <h2 class="col">Awards</h2>
+                <div class="section-text-width col-right row" id="awards-add-host" >
+                    <div class="extra-top-margin" id="awards">
+                    
+                    </div>
+                </div>
+            </div>
+
+            <div class="section row" id="languages-hover-base">
+                <h2 class="col">Languages</h2>
+                <div class="section-text col-right row" id="languages-add-host">
+                    <div class="extra-top-margin">
+                        <ul class="skills broken-list-2" id="languages">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section row" id="volunteering-hover-base">
+                <h2 class="col">Volunteering</h2>
+                <div class="section-text col-right row" id="volunteering-add-host">
+                    <div class="extra-top-margin" id="volunteering">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
