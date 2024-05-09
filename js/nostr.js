@@ -4,8 +4,16 @@ var userNames = new Map()
 var relay = undefined
 
 async function start() {
-    pubkey = new URLSearchParams(window.location.search).get('author')
-    if (!pubkey) { pubkey = await window.nostr.getPublicKey() }
+    const urlParams = new URLSearchParams(window.location.search);
+
+    pubkey = urlParams.get('author')
+    if (!pubkey) { 
+        pubkey = await window.nostr.getPublicKey() 
+
+        urlParams.set("author", pubkey);
+        var newRelativePathQuery = window.location.pathname + '?' + urlParams.toString();
+        history.pushState(null, '', newRelativePathQuery);
+    }
 
     relay = await NostrTools.Relay.connect('wss://nostr.mom')
 
