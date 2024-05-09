@@ -2,19 +2,34 @@ var pubkey = undefined
 var cv = undefined
 var userNames = new Map()
 var relay = undefined
+var loggedIn = false
+var isOwner = false
 
-async function start() {
+async function updateLoggedInfo() {
+    let loggedInKey = undefined
+
+    try {
+        loggedInKey = await window.nostr.getPublicKey() 
+    } catch {}
+
     const urlParams = new URLSearchParams(window.location.search);
-
     pubkey = urlParams.get('author')
     if (!pubkey) { 
-        pubkey = await window.nostr.getPublicKey() 
+        pubkey = loggedInKey
+        isOwner = true
 
         urlParams.set("author", pubkey);
         var newRelativePathQuery = window.location.pathname + '?' + urlParams.toString();
         history.pushState(null, '', newRelativePathQuery);
+    } else {
+        loggedIn = loggedInKey != undefined
+        isOwner = pubkey === loggedInKey
     }
 
+    console.log(loggedIn, isOwner)
+}
+
+async function start() {
     relay = await NostrTools.Relay.connect('wss://nostr.mom')
 
     // let's query for an event that exists
@@ -195,8 +210,10 @@ function updateListSection(listName, list, tagName) {
     list.forEach((item, index) => {
         $('<li></li>').attr({ 'id': id+index }).text(item[1]).appendTo(section)
 
-        initEditorFromTo(listName+index, ()=> item[1], tagName)
-        initDelete(listName+index, listName+index, () => deleteTag(cv, tagName, item[1]))
+        if (loggedIn && isOwner) {
+            initEditorFromTo(listName+index, ()=> item[1], tagName)
+            initDelete(listName+index, listName+index, () => deleteTag(cv, tagName, item[1]))
+        }
     })
 }
 
@@ -263,31 +280,19 @@ function updateSchoolSection(listName, list, tagName) {
 
         div.appendTo(section)
 
-        initEditorPosition(listName+index+"degree", ()=> school.degree, tagName, school.id, SCHOOL_DEGREE)
-        initEditorPosition(listName+index+"field", ()=> school.field, tagName, school.id, SCHOOL_FIELD)
-        initEditorPosition(listName+index+"name", ()=> school.name, tagName, school.id, SCHOOL_NAME)
-        initEditorPosition(listName+index+"location", ()=> school.location, tagName, school.id, SCHOOL_LOCATION)
-        initDateEditorPosition(listName+index+"start", ()=> formatDateToInput(school.start), tagName, school.id, SCHOOL_START)
-        initDateEditorPosition(listName+index+"end", ()=> formatDateToInput(school.end), tagName, school.id, SCHOOL_END)
-        initDelete(listName+index, listName+index+"title", () => deleteTag2(cv, tagName, school.id))
+        if (loggedIn && isOwner) {
+            initEditorPosition(listName+index+"degree", ()=> school.degree, tagName, school.id, SCHOOL_DEGREE)
+            initEditorPosition(listName+index+"field", ()=> school.field, tagName, school.id, SCHOOL_FIELD)
+            initEditorPosition(listName+index+"name", ()=> school.name, tagName, school.id, SCHOOL_NAME)
+            initEditorPosition(listName+index+"location", ()=> school.location, tagName, school.id, SCHOOL_LOCATION)
+            initDateEditorPosition(listName+index+"start", ()=> formatDateToInput(school.start), tagName, school.id, SCHOOL_START)
+            initDateEditorPosition(listName+index+"end", ()=> formatDateToInput(school.end), tagName, school.id, SCHOOL_END)
+            initDelete(listName+index, listName+index+"title", () => deleteTag2(cv, tagName, school.id))
+        }
     })
 }
 
 function updateWorkSection(listName, list, tagName) {
-    /**
-    <div class="section-text-full">
-        <h3>Google</h3>
-        <div class="row subsection">
-            <div class="emph col">Full stack engineer</div>
-            <div class="col-right light">July 2015 - Present</div>
-        </div>
-        <ul class="desc">
-            <li>YouTube Heroes</li>
-            <li>YouTube Trust and Safety Community Platform</li>
-        </ul>
-    </div>
-     */
-
     let id = listName.replace("#", "")
     let section = $(listName)
     section.html("")
@@ -327,12 +332,14 @@ function updateWorkSection(listName, list, tagName) {
 
         div.appendTo(section)
 
-        initEditorPosition(listName+index+"jobTitle", ()=> work.jobTitle, tagName, work.id, WORK_JOB_TITLE)
-        initEditorPosition(listName+index+"name", ()=> work.name, tagName, work.id, WORK_NAME)
-        initEditorPosition(listName+index+"location", ()=> work.location, tagName, work.id, WORK_LOCATION)
-        initDateEditorPosition(listName+index+"start", ()=> formatDateToInput(work.start), tagName, work.id, WORK_START)
-        initDateEditorPosition(listName+index+"end", ()=> formatDateToInput(work.end), tagName, work.id, WORK_END)
-        initDelete(listName+index, listName+index+"jobTitle", () => deleteTag2(cv, tagName, work.id))
+        if (loggedIn && isOwner) {
+            initEditorPosition(listName+index+"jobTitle", ()=> work.jobTitle, tagName, work.id, WORK_JOB_TITLE)
+            initEditorPosition(listName+index+"name", ()=> work.name, tagName, work.id, WORK_NAME)
+            initEditorPosition(listName+index+"location", ()=> work.location, tagName, work.id, WORK_LOCATION)
+            initDateEditorPosition(listName+index+"start", ()=> formatDateToInput(work.start), tagName, work.id, WORK_START)
+            initDateEditorPosition(listName+index+"end", ()=> formatDateToInput(work.end), tagName, work.id, WORK_END)
+            initDelete(listName+index, listName+index+"jobTitle", () => deleteTag2(cv, tagName, work.id))
+        }
     })
 }
 
@@ -363,10 +370,12 @@ function updateAwardSection(listName, list, tagName) {
 
         div.appendTo(section)
 
-        initEditorPosition(listName+index+"title", ()=> award.title, tagName, award.id, AWARD_TITLE)
-        initEditorPosition(listName+index+"name", ()=> award.name, tagName, award.id, AWARD_NAME)
-        initDateEditorPosition(listName+index+"issueDate", ()=> formatDateToInput(award.issueDate), tagName, award.id, AWARD_ISSUE_DATE)
-        initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, award.id))
+        if (loggedIn && isOwner) {
+            initEditorPosition(listName+index+"title", ()=> award.title, tagName, award.id, AWARD_TITLE)
+            initEditorPosition(listName+index+"name", ()=> award.name, tagName, award.id, AWARD_NAME)
+            initDateEditorPosition(listName+index+"issueDate", ()=> formatDateToInput(award.issueDate), tagName, award.id, AWARD_ISSUE_DATE)
+            initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, award.id))
+        }
     })
 }
 
@@ -395,11 +404,13 @@ function updatePatentSection(listName, list, tagName) {
         patentTitle.appendTo(div)
 
         div.appendTo(section)
-
-        initEditorPosition(listName+index+"number", ()=> patent.number, tagName, patent.id, PATENT_NUMBER)
-        initEditorPosition(listName+index+"title", ()=> patent.title, tagName, patent.id, PATENT_TITLE)
-        initDateEditorPosition(listName+index+"issueDate", ()=> formatDateToInput(patent.issueDate), tagName, patent.id, PATENT_ISSUE_DATE)
-        initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, patent.id))
+        
+        if (loggedIn && isOwner) {
+            initEditorPosition(listName+index+"number", ()=> patent.number, tagName, patent.id, PATENT_NUMBER)
+            initEditorPosition(listName+index+"title", ()=> patent.title, tagName, patent.id, PATENT_TITLE)
+            initDateEditorPosition(listName+index+"issueDate", ()=> formatDateToInput(patent.issueDate), tagName, patent.id, PATENT_ISSUE_DATE)
+            initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, patent.id))
+        }
     })
 }
 
@@ -429,10 +440,12 @@ function updatePublicationSection(listName, list, tagName) {
 
         div.appendTo(section)
 
-        initEditorPosition(listName+index+"title", ()=> publication.title, tagName, publication.id, PUBLICATION_TITLE)
-        initEditorPosition(listName+index+"journal", ()=> publication.journal, tagName, publication.id, PUBLICATION_JOURNAL)
-        initDateEditorPosition(listName+index+"issueDate", ()=> formatDateToInput(publication.issueDate), tagName, publication.id, PUBLICATION_ISSUE_DATE)
-        initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, publication.id))
+        if (loggedIn && isOwner) {
+            initEditorPosition(listName+index+"title", ()=> publication.title, tagName, publication.id, PUBLICATION_TITLE)
+            initEditorPosition(listName+index+"journal", ()=> publication.journal, tagName, publication.id, PUBLICATION_JOURNAL)
+            initDateEditorPosition(listName+index+"issueDate", ()=> formatDateToInput(publication.issueDate), tagName, publication.id, PUBLICATION_ISSUE_DATE)
+            initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, publication.id))
+        }
     })
 }
 
@@ -472,11 +485,13 @@ function updateVolunteerSection(listName, list, tagName) {
 
         div.appendTo(section)
 
-        initEditorPosition(listName+index+"position", ()=> volunteer.position, tagName, volunteer.id, VOLUNTEER_POSITION)
-        initEditorPosition(listName+index+"name", ()=> volunteer.name, tagName, volunteer.id, VOLUNTEER_NAME)
-        initDateEditorPosition(listName+index+"start", ()=> formatDateToInput(volunteer.start), tagName, volunteer.id, VOLUNTEER_START)
-        initDateEditorPosition(listName+index+"end", ()=> formatDateToInput(volunteer.end), tagName, volunteer.id, VOLUNTEER_END)
-        initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, volunteer.id))
+        if (loggedIn && isOwner) {
+            initEditorPosition(listName+index+"position", ()=> volunteer.position, tagName, volunteer.id, VOLUNTEER_POSITION)
+            initEditorPosition(listName+index+"name", ()=> volunteer.name, tagName, volunteer.id, VOLUNTEER_NAME)
+            initDateEditorPosition(listName+index+"start", ()=> formatDateToInput(volunteer.start), tagName, volunteer.id, VOLUNTEER_START)
+            initDateEditorPosition(listName+index+"end", ()=> formatDateToInput(volunteer.end), tagName, volunteer.id, VOLUNTEER_END)
+            initDelete(listName+index, listName+index, () => deleteTag2(cv, tagName, volunteer.id))
+        }
     })
 }
 
@@ -502,52 +517,79 @@ async function updateCVScreen() {
 }
 
 function initEditorFromTo(id, getValueFn, cvTag) {
+    $(id).off('click');
     $(id).on("click", (ev) => { toggleTextEdit(ev, () => getValueFn(), (newValue) => updateFromTo(cv, cvTag, getValueFn(), newValue)) })
     $(id).addClass("edit-marker")
 }
 
 function initEditorPosition(id, getValueFn, cvTag, tagIndex, pos) {
+    $(id).off('click');
     $(id).on("click", (ev) => { toggleTextEdit(ev, () => getValueFn(), (newValue) => updatePositional(cv, cvTag, tagIndex, pos, newValue)) })
     $(id).addClass("edit-marker")
 }
 
 function initDateEditorPosition(id, getValueFn, cvTag, tagIndex, pos) {
+    $(id).off('click');
     $(id).on("click", (ev) => { toggleDateTextEdit(ev, () => getValueFn(), (newValue) => updatePositional(cv, cvTag, tagIndex, pos, newValue)) })
     $(id).addClass("edit-marker")
 }
 
 function initEditor(id, getValueFn, cvTag) {
+    $(id).off('click');
     $(id).on("click", (ev) => { toggleTextEdit(ev, () => getValueFn(), (newValue) => update(cv, cvTag, newValue)) })
     $(id).addClass("edit-marker")
 }
 
 function initAreaEditor(id, getValueFn, cvTag) {
+    $(id).off('click');
     $(id).on("click", (ev) => { toggleTextArea(ev, () => getValueFn(), (newValue) => update(cv, cvTag, newValue)) })
     $(id).addClass("edit-marker")
 }
 
 async function initEditors() {
-    initEditor("#name", getName, "name")
-    initEditor("#email", getEmail, "email")
-    initEditor("#website", getWebsite, "website")
-    initEditor("#location", getLocation, "location")
+    if (loggedIn && isOwner) {
+        initEditor("#name", getName, "name")
+        initEditor("#email", getEmail, "email")
+        initEditor("#website", getWebsite, "website")
+        initEditor("#location", getLocation, "location")
 
-    initAreaEditor("#summary", getSummary, "summary")
-    initAdd("#interests-hover-base", "#interests-add-host", (newValue) => add(cv, "t", newValue), "new interest")
-    initAdd("#skills-hover-base", "#skills-add-host", (newValue) => add(cv, "l", newValue), "new skill")
-    
-    initAdd("#education-hover-base", "#education-add-host", (newValue) => addTagArray(cv, createSchoolWithName(cv, newValue)), "new college")
-    initAdd("#work-hover-base", "#work-add-host", (newValue) => addTagArray(cv, createWorkWithName(cv, newValue)), "new work experience")
-    initAdd("#awards-hover-base", "#awards-add-host", (newValue) => addTagArray(cv, createAwardWithName(cv, newValue)), "new award, honour or certification")
-    initAdd("#patents-hover-base", "#patents-add-host", (newValue) => addTagArray(cv, createPatentWithName(cv, newValue)), "new patent title")
-    initAdd("#publications-hover-base", "#publications-add-host", (newValue) => addTagArray(cv, createPublicationWithName(cv, newValue)), "new publication title")
+        initAreaEditor("#summary", getSummary, "summary")
+        initAdd("#interests-hover-base", "#interests-add-host", (newValue) => add(cv, "t", newValue), "new interest")
+        initAdd("#skills-hover-base", "#skills-add-host", (newValue) => add(cv, "l", newValue), "new skill")
+        
+        initAdd("#education-hover-base", "#education-add-host", (newValue) => addTagArray(cv, createSchoolWithName(cv, newValue)), "new college")
+        initAdd("#work-hover-base", "#work-add-host", (newValue) => addTagArray(cv, createWorkWithName(cv, newValue)), "new work experience")
+        initAdd("#awards-hover-base", "#awards-add-host", (newValue) => addTagArray(cv, createAwardWithName(cv, newValue)), "new award, honour or certification")
+        initAdd("#patents-hover-base", "#patents-add-host", (newValue) => addTagArray(cv, createPatentWithName(cv, newValue)), "new patent title")
+        initAdd("#publications-hover-base", "#publications-add-host", (newValue) => addTagArray(cv, createPublicationWithName(cv, newValue)), "new publication title")
 
-    initAdd("#languages-hover-base", "#languages-add-host", (newValue) => add(cv, "u", newValue), "new language")
+        initAdd("#languages-hover-base", "#languages-add-host", (newValue) => add(cv, "u", newValue), "new language")
 
-    initAdd("#volunteering-hover-base", "#volunteering-add-host", (newValue) => addTagArray(cv, createVolunteerWithName(cv, newValue)), "new volunteer")
+        initAdd("#volunteering-hover-base", "#volunteering-add-host", (newValue) => addTagArray(cv, createVolunteerWithName(cv, newValue)), "new volunteer")
+    }
 }
 
-$(document).ready(function () {
+$(document).ready(async function () {
+    document.addEventListener('nlAuth',async (e) => {
+        console.log("nlauth", e)
+        if (e.detail.type === 'login' || e.detail.type === 'signup') {
+          if (!loggedIn) {
+            console.log("Logging In")
+            loggedIn = true
+            await updateLoggedInfo();
+            initEditors()
+          }
+        } else {
+          if (loggedIn) {
+            console.log("Logging Off")
+            loggedIn = false
+            await updateLoggedInfo();
+            initEditors()
+          }
+        }
+    });
+
+    await updateLoggedInfo();
     initEditors()
     start()
 });

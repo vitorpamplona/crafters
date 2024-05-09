@@ -22,6 +22,12 @@ function patentObj(index, tag) {
 
 function sortPatents(array) {
     return array.sort((a, b) => {
+        if (!a.issueDate && b.issueDate) {
+            return -1
+        } else if (a.issueDate && !b.issueDate) {
+            return 1
+        }
+
         if (a.issueDate > b.issueDate) {
             return -1
         } else if (a.issueDate < b.issueDate) {
